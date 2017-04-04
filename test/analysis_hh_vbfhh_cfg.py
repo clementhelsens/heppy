@@ -11,14 +11,24 @@ reload(logging)
 logging.basicConfig(level=logging.WARNING)
 
 
-from FCChh_samples import pp_vbfhh
+from FCChh_samples import pp_vbf_hh
 
-pp_vbfhh.splitFactor=50
+pp_vbf_hh.splitFactor=50
 
 
 comp = cfg.Component(
     'example',
-     files = ["root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbfhh/events90.root"]
+     files = ["root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events90.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events91.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events92.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events93.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events94.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events95.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events96.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events97.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events98.root",
+#              "root://eospublic.cern.ch//eos/fcc/hh/generation/DelphesEvents/v0_0/pp_vbf_hh/events99.root",
+]
 )
 
 #to run over all the files on eos (batch)
@@ -90,6 +100,13 @@ jets_30 = cfg.Analyzer(
     filter_func = lambda jet: jet.pt()>30.
 )
 
+vbf_jets_30 = cfg.Analyzer(
+    Selector,
+    'jets_30',
+    output = 'vbf_jets_30',
+    input_objects = 'jets_30',
+    filter_func = lambda jet: abs(jet.eta())>3.5
+)
 
 from heppy.analyzers.examples.ttbar.BTagging import BTagging
 btagging = cfg.Analyzer(

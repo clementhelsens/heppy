@@ -22,7 +22,7 @@ class Selection(Analyzer):
         #select events with at least 6 jets
         if len(event.jets_30)<6:
             return False
-        self.counters['cut_flow'].inc('At least 4 jets')
+        self.counters['cut_flow'].inc('At least 6 jets')
 
         #select events with at least 1 b-jet
         if len(event.b_jets_30)<2:
