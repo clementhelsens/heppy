@@ -24,6 +24,15 @@ class vbfHHTreeProducer(Analyzer):
         bookParticle(self.tree, 'forward_jet2')
 
         bookMet(self.tree, 'met')
+        var(self.tree, 'forward_jet_eta_diff')
+        var(self.tree, 'jet1_btag')
+        var(self.tree, 'jet2_btag')
+        var(self.tree, 'jet3_btag')
+        var(self.tree, 'jet4_btag')
+        var(self.tree, 'jet5_btag')
+        var(self.tree, 'jet6_btag')
+        var(self.tree, 'jet7_btag')
+        var(self.tree, 'jet8_btag')
 
     def process(self, event):
         self.tree.reset()
@@ -31,21 +40,29 @@ class vbfHHTreeProducer(Analyzer):
         jets = getattr(event, self.cfg_ana.jets_30)
         if len(jets)<3:
             return # NOT FILLING THE TREE IF LESS THAN 4 JETS
-        jets_tmp = []
         for ijet, jet in enumerate(jets):
             if ijet==8:
                 break
             fillParticle(self.tree, 'jet{ijet}'.format(ijet=ijet+1), jet)
-            jets_tmp.append([ijet,abs(jet.eta())])
+            fill(self.tree, 'jet{ijet}_btag'.format(ijet=ijet+1), jet.tags['bf'])
 
-        eta_ordered_jets=sorted(jets_tmp,key=lambda l:l[1], reverse=True)
-        fillParticle(self.tree, 'forward_jet1', jets[eta_ordered_jets[0][0]])
-        fillParticle(self.tree, 'forward_jet2', jets[eta_ordered_jets[1][0]])
+
+        forward_jet1 = getattr(event, self.cfg_ana.forward_jet1)
+        forward_jet2 = getattr(event, self.cfg_ana.forward_jet2)
+
+        if forward_jet1:
+            fillParticle(self.tree, 'forward_jet1', forward_jet1)
+            fillParticle(self.tree, 'forward_jet2', forward_jet2)
+
+        forward_jet_eta_diff = getattr(event, self.cfg_ana.forward_jet_eta_diff)
+        
+        if forward_jet_eta_diff: 
+            fill(self.tree, 'forward_jet_eta_diff', forward_jet_eta_diff)
 
         met = getattr(event, self.cfg_ana.met)
         fillMet(self.tree, 'met', met)
         self.tree.tree.Fill()
-        
+
     def write(self, setup):
         self.rootfile.Write()
         self.rootfile.Close()
