@@ -100,12 +100,13 @@ jets_30 = cfg.Analyzer(
     filter_func = lambda jet: jet.pt()>30.
 )
 
+from heppy.analyzers.VBFjets import VBFjets
 vbf_jets_30 = cfg.Analyzer(
-    Selector,
-    'jets_30',
-    output = 'vbf_jets_30',
-    input_objects = 'jets_30',
-    filter_func = lambda jet: abs(jet.eta())>3.5
+    VBFjets,
+    forward_jet1 = 'forward_jet1',
+    forward_jet2 = 'forward_jet2',
+    forward_jet_eta_diff = 'forward_jet_eta_diff',
+    jets = 'jets_30'
 )
 
 from heppy.analyzers.examples.ttbar.BTagging import BTagging
@@ -128,8 +129,10 @@ from heppy.vbfHHanalysis.vbfHHTreeProducer import vbfHHTreeProducer
 gen_tree = cfg.Analyzer(
     vbfHHTreeProducer,
     jets_30 = 'jets_30',
-    met = 'met'
-
+    met = 'met',
+    forward_jet1 = 'forward_jet1',
+    forward_jet2 = 'forward_jet2',
+    forward_jet_eta_diff = 'forward_jet_eta_diff'
 )
 
 # definition of a sequence of analyzers,
@@ -137,6 +140,7 @@ gen_tree = cfg.Analyzer(
 sequence = cfg.Sequence( [
     source,
     jets_30,
+    vbf_jets_30,
     muons,
     electrons,
     btagging,

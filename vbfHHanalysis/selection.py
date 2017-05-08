@@ -10,6 +10,7 @@ class Selection(Analyzer):
         self.counters['cut_flow'].register('At least 4 jets')
         self.counters['cut_flow'].register('At least 6 jets')
         self.counters['cut_flow'].register('At least 2 b-jet')
+        self.counters['cut_flow'].register('Eta difference of at least 4')
 
     def process(self, event):
         self.counters['cut_flow'].inc('All events')
@@ -24,9 +25,14 @@ class Selection(Analyzer):
             return False
         self.counters['cut_flow'].inc('At least 6 jets')
 
-        #select events with at least 1 b-jet
+        #select events with at least 2 b-jets
         if len(event.b_jets_30)<2:
             return False
         self.counters['cut_flow'].inc('At least 2 b-jet')
-            
+
+        #select events with eta difference of at least 4
+        if (event.forward_jet_eta_diff<4):
+            return False
+        self.counters['cut_flow'].inc('Eta difference of at least 4')            
+
         return True
