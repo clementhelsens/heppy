@@ -1,21 +1,24 @@
+#!/usr/bin/env python
+
 import os
 import shutil
 import re
 from heppy.utils.batchmanager import BatchManager
 
 
-def batchScriptLocal(index, cardfname):
+def batchScriptLocal(index, cardfname, selection):
     '''prepare a local version of the batch script, to run using nohup'''
-
     script = """#!/bin/bash
+pwd
+echo {cardfname}
 echo 'running job' {index}
 echo
-fcc-pythia8-generate {cardfname}
-""".format(index=index, cardfname=cardfname) 
+fcc-pythia8-generate {cardfname} {selection}
+""".format(index=index, cardfname=cardfname, selection=selection) 
     return script
 
 
-def batchScriptCERN_FCC(index, cardfname):
+def batchScriptCERN_FCC(index, cardfname, selection):
    '''prepare the LSF version of the batch script, to run on LSF'''
 
    dirCopy = """echo 'sending the logs back'  # will send also root files if copy failed
@@ -31,8 +34,10 @@ fi"""
 #BSUB -q 8nm
 # ulimit -v 3000000 # NO
 unset LD_LIBRARY_PATH
+unset PYTHONHOME
+unset PYTHONPATH
 echo 'copying job dir to worker'
-source /afs/cern.ch/exp/fcc/sw/0.8pre/setup.sh
+source /cvmfs/fcc.cern.ch/sw/0.8/init_fcc_stack.sh
 cd $HEPPY
 source ./init.sh
 echo 'environment:'
@@ -45,10 +50,10 @@ cp -rf $LS_SUBCWD .
 ls
 cd `find . -type d | grep /`
 echo 'running'
-fcc-pythia8-generate {cardfname}   
+fcc-pythia8-generate {cardfname} {selection}  
 echo
 {copy}
-""".format(cardfname=cardfname, copy=cpCmd)
+""".format(cardfname=cardfname, selection=selection, copy=cpCmd)
 
    return script
 
@@ -66,10 +71,12 @@ class MyBatchManager( BatchManager ):
         mode = self.RunningMode(self.options_.batch)
         if mode == 'LXPLUS':
             scriptFile.write( batchScriptCERN_FCC(jobDir,
-                                                  self.cardfname) )
+                                                  self.cardfname,
+                                                  self.selection) )
         elif mode == 'LOCAL':
             scriptFile.write( batchScriptLocal(value,
-                                               self.cardfname) )
+                                               self.cardfname, 
+                                               self.selection) )
         scriptFile.close()
         os.system('chmod +x %s' % scriptFileName)
         configfile = open('/'.join([jobDir, self.cardfname]), 'w')
@@ -105,10 +112,13 @@ def main(options, args, batchManager):
     
     batchManager.config = build_config(cardfname, nevents)
     batchManager.cardfname = cardfname
-    
+    batchManager.selection = ""
+    if options.selection:
+        batchManager.selection = '-s ' + options.selection
+        
     listOfValues = range(njobs)
     batchManager.PrepareJobs( listOfValues )
-    waitingTime = 0.1
+    waitingTime = 5
     batchManager.SubmitJobs( waitingTime )
 
 
@@ -119,5 +129,7 @@ if __name__ == '__main__':
 
     Run fcc-pythia8-generate on the batch. 
     """
+    batchManager.parser_.add_option("-s", "--selection", dest="selection",
+                                    help="selection string, see fcc-pythia8-generate")
     options, args = batchManager.ParseOptions()
     main(options, args, batchManager)

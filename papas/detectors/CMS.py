@@ -115,8 +115,8 @@ class Tracker(DetectorElement):
 
     def acceptance(self, track):
         # return False
-        pt = track.pt
-        eta = abs(track.p3.Eta())
+        pt = track.p3() .Pt()
+        eta = abs(track.p3() .Eta())
         if eta < 1.35 and pt>0.5:
             return random.uniform(0,1)<0.95
         elif eta < 2.5 and pt>0.5:
@@ -124,9 +124,9 @@ class Tracker(DetectorElement):
         else:
             return False
 
-    def pt_resolution(self, track):
+    def resolution(self, track):
         # TODO: depends on the field
-        pt = track.pt
+        pt = track.p3() .Pt()
         return 1.1e-2
 
     
@@ -140,6 +140,7 @@ class Field(DetectorElement):
         super(Field, self).__init__('tracker', volume,  mat)
 
 class BeamPipe(DetectorElement):
+    '''Beam pipe is not used in the simulation at the moment, so no need to define it.'''
 
     def __init__(self):
         #Material Seamless AISI 316 LN, External diameter 53 mm, Wall thickness 1.5 mm (hors cms) X0 1.72 cm
@@ -153,15 +154,15 @@ class BeamPipe(DetectorElement):
 class CMS(Detector):
         
     def electron_acceptance(self, track):
-        return track.p3.Mag() > 5 and abs(track.p3.Eta()) < 2.5
+        return track.p3() .Mag() > 5 and abs(track.p3() .Eta()) < 2.5
 
-    def electron_energy_resolution(self, ptc):
+    def electron_resolution(self, ptc):
         return 0.1 / math.sqrt(ptc.e())
             
     def muon_acceptance(self, track):
-        return track.pt > 5 and abs(track.p3.Eta()) < 2.5
+        return track.p3() .Pt() > 5 and abs(track.p3() .Eta()) < 2.5
             
-    def muon_pt_resolution(self, ptc):
+    def muon_resolution(self, ptc):
         return 0.02 
     
     def __init__(self):
